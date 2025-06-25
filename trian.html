@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Thanks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+
+    #scene-container {
+      width: 100vw;
+      height: 100vh;
+      perspective: 1500px;
+      overflow: hidden;
+    }
+
+    #scene {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg) scale(0.85);
+      transition: transform 0.1s linear;
+      position: relative;
+    }
+
+    .falling {
+      position: absolute;
+      top: -10vh;
+      transform-style: preserve-3d;
+      transition: opacity 0.1s;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0) translateZ(var(--depth)); opacity: 1; }
+      100% { transform: translateY(120vh) translateZ(var(--depth)); opacity: 0; }
+    }
+
+    @keyframes colorShift {
+      0%   { color: #ffb6c1; }
+      14%  { color: #c9f9ff; }
+      28%  { color: #f8f8ff; }
+      42%  { color: #b2fefa; }
+      57%  { color: #ffdee9; }
+      71%  { color: #c9f9ff; }
+      85%  { color: #f8f8ff; }
+      100% { color: #ffb6c1; }
+    }
+
+    .text {
+      font-size: 14px;
+      color: #ffb6c1;
+      text-shadow: 0 0 10px #ff69b4;
+      will-change: transform, opacity;
+    }
+
+    .animate-text {
+      animation: fall 6s linear forwards, colorShift 8s ease-in-out infinite;
+    }
+
+    .heart {
+      font-size: 12px;
+      color: pink;
+    }
+
+    .animate-heart {
+      animation: fall 5s linear forwards;
+    }
+
+    #intro, #playButton {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 10;
+    }
+
+    #intro {
+      top: 38%;
+      color: #ffc0cb;
+      font-size: 16px;
+      text-shadow: 0 0 10px #ff69b4;
+      margin-bottom: 8px;
+    }
+
+    #playButton {
+      top: calc(38% + 40px);
+      background: #ff69b4;
+      border: none;
+      color: white;
+      font-size: 16px;
+      padding: 8px 20px;
+      border-radius: 30px;
+      box-shadow: 0 0 10px #ff69b4;
+      cursor: pointer;
+    }
+
+    #bgm {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .text { font-size: 12px; }
+      .heart { font-size: 10px; }
+      #intro { font-size: 14px; }
+      #playButton {
+        font-size: 14px;
+        padding: 6px 16px;
+      }
+    }
+
+    .hidden {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10vh) translateZ(var(--depth));
+      animation: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div id="intro"></div>
+<button id="playButton">Bắt đầu</button>
+
+<audio id="bgm" loop>
+  <source src="https://raw.githubusercontent.com/vietduygiapdz/thanks/18086585af079790d9df889bbdf9f1df544257a4/utomp3.com%20-%20Ph%C3%A9p%20M%C3%A0u%20%C4%90%C3%A0n%20C%C3%A1%20G%E1%BB%87%20OST%20%20Mounter%20x%20MAYDAYs%20Minh%20T%E1%BB%91c%20%20Official%20MV.mp3" type="audio/mpeg">
+  Trình duyệt của bạn không hỗ trợ phát nhạc.
+</audio>
+
+<div id="scene-container">
+  <div id="scene"></div>
+</div>
+
+<script>
+  const messages = [
+    "Chúng em cảm ơn cô vì thời gian vừa qua.",
+    "Chúc cô luôn mạnh khỏe, hạnh phúc và thành công trong sự nghiệp trồng người.",
+    "Cảm ơn người mẹ thứ hai của chúng con.",
+    "Chúng em xin lỗi vì những giây phút bồng bột tuổi học trò.",
+    "Những bài thi điểm tốt là những lời cảm ơn cuối cùng chúng em muốn dành tặng cô.",
+    "Chúng em cảm ơn cô Phạm Hồng Trang!",
+    "Em sẽ luôn nhớ những bài học và kỷ niệm quý giá cùng cô.",
+    "Mong rằng A10K58 sẽ luôn là một phần kí ức đẹp đối với cô.",
+    "Tụi em không biết tặng gì… nên tặng luôn bảng điểm cho hoành tráng!",
+    "Cô có lẽ là người duy nhất dám đối đầu với 45 cái loa phát thanh mini suốt 3 năm trời!",
+    "Chúng em đi rồi, chắc lớp học sẽ… yên tĩnh hơn nhiều đó ạ!",
+    "Từ nay cô sẽ không còn phải nghe chúng em xin tới muộn – vì A10K58 đã tốt nghiệp rồi ạ!",
+    "Dù có ra sao, chúng em chỉ mong A10K58 luôn là một ký ức khiến cô mỉm cười (vì thoát nạn)!",
+    "Chúng em cảm ơn cô Phạm Hồng Trang!"
+  ];
+
+  const hearts = ["💗", "💓", "💖", "💞", "💝", "❤️", "💕"];
+  const scene = document.getElementById('scene');
+
+  for (let i = 0; i < 150; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.top = `${Math.random() * 100}vh`;
+    star.style.left = `${Math.random() * 100}vw`;
+    star.style.animationDuration = `${2 + Math.random() * 3}s`;
+    document.body.appendChild(star);
+  }
+
+  // Pre-create text elements
+  const textElements = messages.map(msg => {
+    const el = document.createElement('div');
+    el.className = 'falling text hidden';
+    const z = Math.floor(Math.random() * 1000) - 600;
+    el.style.left = `${Math.random() * 80}vw`;
+    el.style.setProperty('--depth', `${z}px`);
+    el.innerText = msg;
+    scene.appendChild(el);
+    return el;
+  });
+
+  // Pre-create heart elements
+  const heartElements = [];
+  for (let i = 0; i < 50; i++) {
+    const el = document.createElement('div');
+    el.className = 'falling heart hidden';
+    const z = Math.floor(Math.random() * 1000) - 600;
+    el.style.left = `${Math.random() * 100}vw`;
+    el.style.setProperty('--depth', `${z}px`);
+    el.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+    scene.appendChild(el);
+    heartElements.push(el);
+  }
+
+  let rotateX = 0;
+  let rotateY = 0;
+  let scale = 0.85;
+  let startX, startY;
+
+  function onStart(e) {
+    startX = e.touches ? e.touches[0].clientX : e.clientX;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    document.addEventListener(e.type === 'touchstart' ? 'touchmove' : 'mousemove', onMove);
+    document.addEventListener(e.type === 'touchstart' ? 'touchend' : 'mouseup', onEnd);
+  }
+
+  function onMove(e) {
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    const dx = x - startX;
+    const dy = y - startY;
+    rotateY += dx * 0.2;
+    rotateX -= dy * 0.2;
+    scene.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+    startX = x;
+    startY = y;
+  }
+
+  function onEnd() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onEnd);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onEnd);
+  }
+
+  document.addEventListener("wheel", function(e) {
+    e.preventDefault();
+    scale += e.deltaY * -0.001;
+    scale = Math.min(Math.max(0.5, scale), 2);
+    scene.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+  }, { passive: false });
+
+  scene.addEventListener('mousedown', onStart);
+  scene.addEventListener('touchstart', onStart);
+
+  function startFalling(element, duration, delay) {
+    element.classList.remove('hidden');
+    element.style.opacity = '0';
+    setTimeout(() => {
+      element.style.opacity = '1';
+      element.style.animationDuration = `${duration}s`;
+      element.style.animationDelay = '0s';
+      element.classList.add(element.classList.contains('text') ? 'animate-text' : 'animate-heart');
+
+      element.addEventListener('animationend', () => {
+        element.classList.remove('animate-text', 'animate-heart');
+        element.classList.add('hidden');
+        // Immediate or minimal delay for next fall
+        setTimeout(() => {
+          const newDuration = element.classList.contains('text') ? 6 + Math.random() * 6 : 5 + Math.random() * 5;
+          const newDelay = Math.random() * 0.2; // Very short delay to avoid gaps
+          startFalling(element, newDuration, newDelay);
+        }, 0); // Start next fall immediately after animation ends
+      }, { once: true });
+    }, delay * 1000);
+  }
+
+  document.getElementById("playButton").addEventListener("click", () => {
+    document.getElementById("intro").remove();
+    document.getElementById("playButton").remove();
+    document.getElementById("bgm").play();
+
+    // Stagger the start of each text element
+    textElements.forEach((el, index) => {
+      const delay = index * 0.2 + Math.random() * 0.3;
+      const duration = 6 + Math.random() * 6;
+      startFalling(el, duration, delay);
+    });
+
+    // Stagger the start of each heart element
+    heartElements.forEach((el, index) => {
+      const delay = index * 0.2 + Math.random() * 0.3;
+      const duration = 5 + Math.random() * 5;
+      startFalling(el, duration, delay);
+    });
+  });
+</script>
+
+</body>
+</html>
